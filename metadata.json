@@ -1,0 +1,11 @@
+{
+  "name": "Battle Swipes: Elemental Duel",
+  "description": "A high-stakes elemental card battle game featuring Fire, Ice, Wind, and Earth. Duel against AI or real challengers with Wi-Fi & Bluetooth multiplayer, custom card image transfer, and championship tournaments.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

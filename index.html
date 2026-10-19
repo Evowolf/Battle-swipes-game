@@ -1,0 +1,769 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Battle Swipes: Elemental Duel</title>
+  <meta name="description" content="A high-stakes elemental card battle game featuring Fire, Ice, Wind, and Earth. Duel against an AI opponent with real-time voice, strategic thinking, and custom card generation.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="/card-backing-trimmed.png">
+  <link rel="preload" as="image" href="/buttons/btn_enter_arena.png">
+  <link rel="preload" as="image" href="/buttons/btn_clashing_tournament.png">
+  <link rel="preload" as="image" href="/buttons/btn_options.png">
+  <link rel="preload" as="image" href="/purchasing-runes.png">
+  <link rel="preload" as="image" href="https://raw.githubusercontent.com/Evowolf/Battle-Swipes-assets-/refs/heads/main/Card%20backing.jpeg">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #000;
+      font-family: 'MedievalSharp', cursive;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    .font-cinzel { font-family: 'Cinzel', serif; }
+    
+    *:focus {
+      outline: none !important;
+    }
+
+    .battle-vignette {
+      box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
+      pointer-events: none;
+    }
+
+    .touch-pan-y {
+      touch-action: pan-y !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+
+    .touch-pan-x {
+      touch-action: pan-x !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Custom Scrollbar for Library */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(185, 28, 28, 0.4);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(185, 28, 28, 0.6);
+    }
+
+    /* Background Swaying Effect */
+    @keyframes background-sway {
+      0% { transform: scale(1.1) translate(0%, 0%); }
+      25% { transform: scale(1.1) translate(-1%, 1%); }
+      50% { transform: scale(1.1) translate(1%, -1%); }
+      75% { transform: scale(1.1) translate(-1%, -1%); }
+      100% { transform: scale(1.1) translate(0%, 0%); }
+    }
+
+    .animate-bg-sway {
+      animation: background-sway 30s ease-in-out infinite;
+    }
+
+    /* Shockwave Effect */
+    @keyframes shockwave {
+      0% { transform: scale(0.1); opacity: 1; border-width: 40px; filter: brightness(3); }
+      100% { transform: scale(4.5); opacity: 0; border-width: 0px; filter: blur(15px); }
+    }
+    .animate-shockwave {
+      animation: shockwave 0.45s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+
+    /* Elemental Slash Animation - Fast, Sharp, Energy-based */
+    @keyframes slash-strike {
+      0% { transform: translate(-50%, -50%) rotate(var(--slash-rot, -45deg)) scale(0.2); opacity: 0; filter: brightness(5) blur(5px); }
+      15% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--slash-rot, -45deg)) scale(1.1); filter: brightness(3) blur(0px); }
+      100% { transform: translate(-50%, -50%) rotate(var(--slash-rot, -45deg)) scale(1.3) translateX(120px); opacity: 0; filter: brightness(1) blur(10px); }
+    }
+    .animate-slash {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 320px; 
+      height: auto;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      z-index: 100;
+      animation: slash-strike 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    /* Elemental Burst Animation - Explosive Impact */
+    @keyframes burst-erupt {
+      0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; filter: brightness(4) blur(0px); }
+      25% { opacity: 1; filter: brightness(2) blur(0px); }
+      100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; filter: blur(25px) contrast(0.5); }
+    }
+    .animate-burst {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 280px; 
+      height: auto;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      z-index: 110;
+      animation: burst-erupt 0.5s cubic-bezier(0.1, 0.9, 0.3, 1) forwards;
+    }
+
+    /* Tie Clash Animation */
+    @keyframes tie-impact {
+      0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; filter: brightness(5); }
+      20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; filter: brightness(3); }
+      40% { transform: translate(-50%, -50%) scale(1.0); opacity: 1; filter: brightness(1.5); }
+      100% { transform: translate(-50%, -50%) scale(2.0); opacity: 0; filter: blur(20px); }
+    }
+    .animate-tie-clash {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 400px;
+      height: auto;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      z-index: 150;
+      animation: tie-impact 0.6s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+
+    /* Tie Struggle Animation */
+    @keyframes tie-struggle {
+      0%, 100% { transform: translateX(0) scale(1.05); }
+      25% { transform: translateX(-12px) scale(1.09); }
+      75% { transform: translateX(12px) scale(1.09); }
+    }
+    .animate-struggle { animation: tie-struggle 0.08s linear infinite; }
+
+    /* Particle Motion */
+    @keyframes particle-fly {
+      0% { transform: translate(0, 0) scale(2); opacity: 1; filter: brightness(3); }
+      100% { transform: translate(var(--tx), var(--ty)) scale(0) rotate(var(--tr)); opacity: 0; filter: blur(3px); }
+    }
+    .animate-particle {
+      animation: particle-fly 0.6s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+
+    /* Portal Warp Effect */
+    @keyframes warp-in {
+      0% { transform: scale(0.4) rotate(-15deg); opacity: 0; filter: blur(35px) brightness(4); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; filter: blur(0px) brightness(1); }
+    }
+    .animate-warp { animation: warp-in 1.1s cubic-bezier(0.2, 1, 0.2, 1) forwards; }
+
+    /* Cinematic Text Reveal */
+    @keyframes cinematic-text {
+      0% { letter-spacing: 2em; opacity: 0; transform: scale(0.65); filter: blur(15px); text-shadow: 0 0 30px white; }
+      100% { letter-spacing: 0.3em; opacity: 1; transform: scale(1); filter: blur(0px); text-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+    }
+    .animate-realm-text { animation: cinematic-text 1.3s cubic-bezier(0.2, 1, 0.2, 1) forwards; }
+
+    /* Rune Currency Icon Enforcement */
+    .rune-currency-icon {
+      width: 18px !important;
+      height: 18px !important;
+      min-width: 18px !important;
+      min-height: 18px !important;
+      max-width: 18px !important;
+      max-height: 18px !important;
+      object-fit: contain !important;
+      display: inline-block !important;
+      flex-shrink: 0 !important;
+    }
+
+    /* Improved Clash Motions with Hit-Stop */
+    @keyframes bash-to-right {
+      0% { transform: translateX(0); }
+      15% { transform: translateX(-120px) scale(0.9); }
+      30% { transform: translateX(350px) scale(1.2); }
+      45% { transform: translateX(340px) scale(1.2); } 
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes bash-to-left {
+      0% { transform: translateX(0); }
+      15% { transform: translateX(120px) scale(0.9); }
+      30% { transform: translateX(-350px) scale(1.2); }
+      45% { transform: translateX(-340px) scale(1.2); } 
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes impact-hit-shake {
+      0% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+      12% { transform: translate(-20px, -12px) scale(1.12); filter: brightness(3.5) contrast(2); }
+      28% { transform: translate(20px, 14px) scale(1.08); filter: brightness(2.5) contrast(1.5); }
+      45% { transform: translate(-15px, 12px) scale(1.1); filter: brightness(3) contrast(2); }
+      65% { transform: translate(12px, -10px) scale(1.04); filter: brightness(1.8); }
+      85% { transform: translate(-8px, 6px) scale(1.02); filter: brightness(1.4); }
+      100% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+    }
+
+    @keyframes vibrate-fade {
+      0% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; filter: brightness(1); }
+      15% { transform: scale(1.08) translateY(-20px) rotate(-8deg); opacity: 1; filter: brightness(2) contrast(2); }
+      100% { transform: scale(0.1) translateY(650px) rotate(65deg); opacity: 0; filter: blur(30px); }
+    }
+
+    @keyframes vs-intro {
+      0% { transform: scale(9); opacity: 0; filter: brightness(25) blur(50px); }
+      100% { transform: scale(1); opacity: 1; filter: brightness(1) blur(0); }
+    }
+
+    @keyframes vs-outro {
+      0% { transform: scale(1); opacity: 1; filter: blur(0); }
+      100% { transform: scale(2.5); opacity: 0; filter: blur(15px); }
+    }
+
+    @keyframes flash {
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+      50% { transform: translateY(-12px) rotate(var(--r, 0deg)); }
+    }
+
+    /* 3D Spin and Settle Animation for Newly Forged Cards */
+    @keyframes forge-card-spin-settle {
+      0% {
+        transform: perspective(1000px) translateZ(280px) rotateY(-720deg) scale(0.35);
+        opacity: 0;
+        filter: brightness(3.5) drop-shadow(0 0 50px rgba(255, 215, 0, 0.95));
+      }
+      25% {
+        opacity: 1;
+        filter: brightness(2.4) drop-shadow(0 0 40px rgba(255, 255, 255, 0.9));
+      }
+      65% {
+        transform: perspective(1000px) translateZ(80px) rotateY(-180deg) scale(1.12);
+        filter: brightness(1.6) drop-shadow(0 0 30px rgba(255, 215, 0, 0.8));
+      }
+      85% {
+        transform: perspective(1000px) translateZ(0px) rotateY(15deg) scale(1.05);
+        filter: brightness(1.2) drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+      }
+      94% {
+        transform: perspective(1000px) translateZ(0px) rotateY(-5deg) scale(0.98);
+        filter: brightness(1.05);
+      }
+      100% {
+        transform: perspective(1000px) translateZ(0px) rotateY(0deg) scale(1);
+        opacity: 1;
+        filter: brightness(1) drop-shadow(0 15px 35px rgba(0, 0, 0, 0.9));
+      }
+    }
+
+    .animate-forge-spin-settle {
+      animation: forge-card-spin-settle 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform-style: preserve-3d;
+      will-change: transform, opacity, filter;
+    }
+
+    /* Radial Shockwave for Card Creation */
+    @keyframes forge-radiant-shockwave {
+      0% {
+        transform: translate(-50%, -50%) scale(0.1);
+        opacity: 1;
+        border-width: 20px;
+        filter: brightness(3.5);
+      }
+      60% {
+        opacity: 0.85;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(3.2);
+        opacity: 0;
+        border-width: 2px;
+        filter: blur(10px);
+      }
+    }
+
+    .animate-forge-shockwave {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 260px;
+      height: 360px;
+      border-radius: 32px;
+      pointer-events: none;
+      animation: forge-radiant-shockwave 1.5s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translate(0, 0); }
+      10%, 30%, 50%, 70%, 90% { transform: translate(-12px, -7px); }
+      20%, 40%, 60%, 80% { transform: translate(12px, 7px); }
+    }
+
+    /* New Card Animations */
+    @keyframes card-draw {
+      0% { transform: translate(-200px, 300px) rotate(-20deg) scale(0.5); opacity: 0; filter: blur(20px); }
+      60% { transform: translate(20px, -20px) rotate(5deg) scale(1.1); filter: blur(0px); }
+      100% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+    }
+
+    @keyframes card-select-ping {
+      0% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.3); filter: brightness(3); box-shadow: 0 0 80px currentColor; }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+
+    @keyframes elemental-glow {
+      0%, 100% { filter: drop-shadow(0 0 20px var(--glow-color, rgba(255,255,255,0.4))); }
+      50% { filter: drop-shadow(0 0 45px var(--glow-color, rgba(255,255,255,0.8))); }
+    }
+
+    .animate-card-draw {
+      animation: card-draw 0.6s cubic-bezier(0.2, 1, 0.3, 1) backwards;
+    }
+
+    .animate-select-ping {
+      animation: card-select-ping 0.3s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+
+    .card-hover:hover {
+      z-index: 100;
+      transform: translateY(-80px) scale(1.25) rotate(0deg) !important;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: elemental-glow 1.5s ease-in-out infinite;
+    }
+
+    /* Card Glow Colors */
+    .glow-fire { --glow-color: rgba(239, 68, 68, 0.8); }
+    .glow-ice { --glow-color: rgba(96, 165, 250, 0.8); }
+    .glow-wind { --glow-color: rgba(74, 222, 128, 0.8); }
+    .glow-earth { --glow-color: rgba(185, 28, 28, 0.8); }
+    .glow-field { --glow-color: rgba(250, 204, 21, 1); }
+
+    .animate-spin-in-l { animation: card-spin-in-left 0.7s cubic-bezier(0.1, 1, 0.2, 1) forwards; }
+    .animate-spin-in-r { animation: card-spin-in-right 0.7s cubic-bezier(0.1, 1, 0.2, 1) forwards; }
+    .animate-bash-r { animation: bash-to-right 0.65s ease-in-out forwards; }
+    .animate-bash-l { animation: bash-to-left 0.65s ease-in-out forwards; }
+    .animate-impact-hit { animation: impact-hit-shake 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    .animate-die { animation: vibrate-fade 0.75s cubic-bezier(0.5, 0, 0.8, 0.3) forwards; }
+    .animate-vs { animation: vs-intro 0.6s cubic-bezier(0.2, 1, 0.2, 1) forwards; }
+    .animate-vs-fade { animation: vs-outro 0.45s ease-in forwards; }
+    .animate-shake-heavy { animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+    .animate-flash { animation: flash 0.35s ease-out forwards; }
+
+    /* Hero Cinematic Ascent, Descent, Camera Tracking, and Glowing Aura Keyframes */
+    @keyframes hero-soar-up {
+      0% { transform: translateY(0) scale(1) rotate(0deg) rotateX(0deg); filter: brightness(1) drop-shadow(0 0 10px rgba(0,0,0,0.5)); }
+      25% { transform: translateY(-100px) scale(1.3) rotate(-15deg) rotateX(10deg); filter: brightness(2) drop-shadow(0 0 60px rgba(255,215,0,0.95)); }
+      100% { transform: translateY(-1100px) scale(0.35) rotate(360deg) rotateX(25deg); filter: brightness(4) drop-shadow(0 0 120px rgba(255,255,255,1)); }
+    }
+    .animate-hero-ascent {
+      animation: hero-soar-up 0.95s cubic-bezier(0.12, 0.85, 0.35, 1) forwards;
+    }
+
+    @keyframes hero-plunge-down {
+      0% { transform: translateY(-1100px) scale(1.75) rotate(-20deg); filter: brightness(4) blur(12px) drop-shadow(0 0 100px currentColor); }
+      60% { transform: translateY(0) scale(1.35) rotate(0deg); filter: brightness(2.8) blur(0px) drop-shadow(0 0 60px currentColor); }
+      80% { transform: translateY(-20px) scale(1.1) rotate(2deg); filter: brightness(1.6); }
+      100% { transform: translateY(0) scale(1) rotate(0deg); filter: brightness(1); }
+    }
+    .animate-hero-descent {
+      animation: hero-plunge-down 0.55s cubic-bezier(0.1, 0.9, 0.2, 1.1) forwards;
+    }
+
+    @keyframes camera-tilt-ascent {
+      0% { transform: translateY(0) scale(1); filter: brightness(1) contrast(1); }
+      40% { transform: translateY(160px) scale(1.18); filter: brightness(0.7) contrast(1.3); }
+      100% { transform: translateY(0) scale(1); filter: brightness(1) contrast(1); }
+    }
+    .animate-camera-ascent {
+      animation: camera-tilt-ascent 0.95s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+    }
+
+    @keyframes organic-hero-aura-pulse {
+      0%, 100% { transform: scale(1.1) rotate(0deg); opacity: 0.85; filter: blur(30px) brightness(1.4); }
+      50% { transform: scale(1.5) rotate(180deg); opacity: 1; filter: blur(50px) brightness(2.8); }
+    }
+    .animate-hero-aura {
+      animation: organic-hero-aura-pulse 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes cinematic-rays-spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); opacity: 0.2; }
+      50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.2); opacity: 0.45; }
+      100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); opacity: 0.2; }
+    }
+    .animate-cinematic-rays {
+      animation: cinematic-rays-spin 12s linear infinite;
+    }
+
+    @keyframes shockwave-expand {
+      0% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; filter: blur(4px) brightness(3); }
+      60% { opacity: 0.8; filter: blur(12px) brightness(2); }
+      100% { transform: translate(-50%, -50%) scale(4.5); opacity: 0; filter: blur(30px) brightness(1); }
+    }
+    .animate-shockwave-ring {
+      animation: shockwave-expand 0.75s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+
+    @keyframes card-spin-in-left {
+      0% { transform: translateX(-500px) rotate(-180deg) scale(0.1); opacity: 0; }
+      100% { transform: translateX(0) rotate(0) scale(1); opacity: 1; }
+    }
+    @keyframes card-spin-in-right {
+      0% { transform: translateX(500px) rotate(180deg) scale(0.1); opacity: 0; }
+      100% { transform: translateX(0) rotate(0) scale(1); opacity: 1; }
+    }
+
+    .animate-spin-in-l {
+      animation: card-spin-in-left 0.55s cubic-bezier(0.18, 0.9, 0.3, 1) forwards;
+    }
+    .animate-spin-in-r {
+      animation: card-spin-in-right 0.55s cubic-bezier(0.18, 0.9, 0.3, 1) forwards;
+    }
+
+    .card-wrapper {
+      perspective: 1000px;
+    }
+
+    /* Unique Hero & Elemental Animation Keyframes */
+    @keyframes hero-wings-flare {
+      0% { transform: scale(0.2) rotate(-10deg); opacity: 0; filter: brightness(4) blur(10px); }
+      50% { transform: scale(1.4) rotate(5deg); opacity: 1; filter: brightness(2) blur(0px); }
+      100% { transform: scale(1.2) rotate(0deg); opacity: 0.9; filter: brightness(1.2); }
+    }
+    .animate-hero-wings {
+      animation: hero-wings-flare 0.8s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+
+    @keyframes aura-spin-ring {
+      0% { transform: translate(-50%, -50%) rotate(0deg) scale(0.8); opacity: 0; }
+      20% { opacity: 1; }
+      100% { transform: translate(-50%, -50%) rotate(360deg) scale(1.3); opacity: 0.8; }
+    }
+    .animate-aura-ring {
+      animation: aura-spin-ring 1.5s linear infinite;
+    }
+
+    @keyframes elemental-surge {
+      0% { transform: scale(0.6); opacity: 0; filter: brightness(3); }
+      40% { transform: scale(1.2); opacity: 1; filter: brightness(2); }
+      100% { transform: scale(1.0); opacity: 0.8; filter: brightness(1); }
+    }
+    .animate-element-surge {
+      animation: elemental-surge 0.6s cubic-bezier(0.2, 1, 0.2, 1) forwards;
+    }
+
+    @keyframes hero-badge-reveal {
+      0% { transform: translateY(30px) scale(0.5); opacity: 0; filter: blur(10px); }
+      50% { transform: translateY(-10px) scale(1.15); opacity: 1; filter: blur(0px); }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .animate-hero-badge {
+      animation: hero-badge-reveal 0.6s cubic-bezier(0.17, 0.89, 0.32, 1.28) forwards;
+    }
+
+    @keyframes shield-bounce {
+      0% { transform: scale(1); box-shadow: 0 0 0px rgba(59,130,246,0); }
+      50% { transform: scale(1.25); box-shadow: 0 0 50px rgba(59,130,246,1); }
+      100% { transform: scale(1); box-shadow: 0 0 20px rgba(59,130,246,0.5); }
+    }
+    .animate-shield-bounce {
+      animation: shield-bounce 0.5s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes element-particles-burst {
+      0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+    }
+    .animate-element-particles {
+      animation: element-particles-burst 0.7s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+
+    /* Ultra Smooth Pokémon Pocket Style Pack-Tear & Card Shoot Effects */
+    @keyframes card-shoot-up {
+      0% {
+        transform: translateY(var(--shoot-start-y, 0px)) scale(1);
+        opacity: 1;
+        filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.4));
+      }
+      22% {
+        transform: translateY(calc(var(--shoot-start-y, 0px) - 75px)) scale(1.03);
+        opacity: 1;
+        filter: drop-shadow(0 0 25px rgba(250, 204, 21, 0.7));
+      }
+      55% {
+        transform: translateY(-280px) scale(1.07);
+        opacity: 0.95;
+        filter: drop-shadow(0 0 45px rgba(250, 204, 21, 0.9));
+      }
+      100% {
+        transform: translateY(-130vh) scale(1.12);
+        opacity: 0;
+        filter: drop-shadow(0 0 60px rgba(250, 204, 21, 1));
+      }
+    }
+
+    @keyframes card-shoot-down {
+      0% {
+        transform: translateY(var(--shoot-start-y, 0px)) scale(1);
+        opacity: 1;
+        filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.4));
+      }
+      22% {
+        transform: translateY(calc(var(--shoot-start-y, 0px) + 75px)) scale(0.98);
+        opacity: 1;
+        filter: drop-shadow(0 0 25px rgba(239, 68, 68, 0.7));
+      }
+      55% {
+        transform: translateY(280px) scale(0.92);
+        opacity: 0.9;
+        filter: drop-shadow(0 0 40px rgba(239, 68, 68, 0.8));
+      }
+      100% {
+        transform: translateY(130vh) scale(0.82);
+        opacity: 0;
+        filter: drop-shadow(0 0 50px rgba(239, 68, 68, 0.5));
+      }
+    }
+
+    @keyframes foil-shine-sweep {
+      0% { transform: translateX(-150%) skewX(-25deg); opacity: 0; }
+      20% { opacity: 0.9; }
+      80% { opacity: 0.9; }
+      100% { transform: translateX(250%) skewX(-25deg); opacity: 0; }
+    }
+
+    @keyframes pack-tear-burst {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); filter: brightness(4); }
+      30% { opacity: 1; transform: translate(-50%, -50%) scale(1.4); filter: brightness(3); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(2.8); filter: blur(20px); }
+    }
+
+    @keyframes pedestal-spin {
+      0% { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg); }
+      100% { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg); }
+    }
+
+    .animate-shoot-up {
+      animation: card-shoot-up 0.52s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    .animate-shoot-down {
+      animation: card-shoot-down 0.52s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    /* Dramatic Battle Card Fling: Shoots upward off screen into the battle area */
+    @keyframes card-battle-fling {
+      0% {
+        transform: translateY(0) scale(1.05);
+        opacity: 1;
+        filter: drop-shadow(0 0 25px rgba(234, 179, 8, 0.9));
+      }
+      20% {
+        transform: translateY(-90px) scale(1.16);
+        opacity: 1;
+        filter: drop-shadow(0 0 45px rgba(234, 179, 8, 1));
+      }
+      50% {
+        transform: translateY(-420px) scale(1.25);
+        opacity: 0.95;
+        filter: drop-shadow(0 0 65px rgba(250, 204, 21, 1));
+      }
+      100% {
+        transform: translateY(-130vh) scale(1.35);
+        opacity: 0;
+        filter: drop-shadow(0 0 85px rgba(250, 204, 21, 1));
+      }
+    }
+
+    .animate-battle-fling {
+      animation: card-battle-fling 0.48s cubic-bezier(0.16, 0.9, 0.3, 1) forwards;
+      will-change: transform, opacity;
+      pointer-events: none;
+    }
+
+    /* Tactile Deck Flick & Card Flight */
+    @keyframes deck-card-fly-off {
+      0% {
+        transform: translate3d(var(--fly-start-x, 0px), var(--fly-start-y, 0px), 15px) rotateX(var(--fly-start-rot-x, 12deg)) rotateZ(var(--fly-start-rot-z, 0deg)) scale(1.04);
+        opacity: 1;
+        filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.75));
+      }
+      22% {
+        transform: translate3d(calc(var(--fly-start-x, 0px) * 0.7 + 6px), calc(var(--fly-start-y, 0px) - 95px), 50px) rotateX(28deg) rotateZ(calc(var(--fly-start-rot-z, 0deg) + 6deg)) scale(1.14);
+        opacity: 1;
+        filter: drop-shadow(0 25px 45px rgba(250, 204, 21, 0.9));
+      }
+      60% {
+        transform: translate3d(0, -320px, 90px) rotateX(50deg) rotateZ(-8deg) scale(1.22);
+        opacity: 0.95;
+        filter: drop-shadow(0 40px 65px rgba(250, 204, 21, 0.98));
+      }
+      100% {
+        transform: translate3d(0, -110vh, 120px) rotateX(72deg) rotateZ(12deg) scale(0.92);
+        opacity: 0;
+        filter: drop-shadow(0 50px 75px rgba(250, 204, 21, 1));
+      }
+    }
+
+    .animate-deck-card-fly-off {
+      animation: deck-card-fly-off 0.46s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+      pointer-events: none;
+    }
+
+    @keyframes deck-float {
+      0%, 100% {
+        transform: translateY(0px) rotateX(24deg) rotateY(-4deg);
+      }
+      50% {
+        transform: translateY(-8px) rotateX(26deg) rotateY(-2deg);
+      }
+    }
+
+    .animate-deck-float {
+      animation: deck-float 4s ease-in-out infinite;
+    }
+
+    @keyframes hand-slot-receive {
+      0% {
+        transform: scale(0.6) translateY(-30px);
+        opacity: 0;
+        filter: brightness(2) drop-shadow(0 0 20px rgba(250, 204, 21, 1));
+      }
+      55% {
+        transform: scale(1.14) translateY(-3px);
+        opacity: 1;
+        filter: brightness(1.3) drop-shadow(0 0 16px rgba(250, 204, 21, 0.85));
+      }
+      100% {
+        transform: scale(1) translateY(0px);
+        opacity: 1;
+        filter: brightness(1);
+      }
+    }
+
+    .animate-hand-slot-receive {
+      animation: hand-slot-receive 0.36s cubic-bezier(0.18, 0.96, 0.28, 1) forwards;
+    }
+
+    /* Graceful Card Fade-In after Add or Remove */
+    @keyframes card-fade-in {
+      0% {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .animate-card-fade-in {
+      animation: card-fade-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    /* Silky Smooth 360 Twirl Animations with 3D Depth - Showing Card Back Clearly at 180° */
+    @keyframes card-twirl-right {
+      0% {
+        transform: rotateY(0deg) scale(1);
+      }
+      50% {
+        transform: rotateY(180deg) scale(1.06);
+      }
+      100% {
+        transform: rotateY(360deg) scale(1);
+      }
+    }
+
+    @keyframes card-twirl-left {
+      0% {
+        transform: rotateY(0deg) scale(1);
+      }
+      50% {
+        transform: rotateY(-180deg) scale(1.06);
+      }
+      100% {
+        transform: rotateY(-360deg) scale(1);
+      }
+    }
+
+    .animate-card-twirl-right {
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+      animation: card-twirl-right 1.1s cubic-bezier(0.35, 0, 0.25, 1) forwards;
+      will-change: transform;
+    }
+
+    .animate-card-twirl-left {
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+      animation: card-twirl-left 1.1s cubic-bezier(0.35, 0, 0.25, 1) forwards;
+      will-change: transform;
+    }
+
+    .animate-foil-sweep {
+      animation: foil-shine-sweep 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    .animate-tear-burst {
+      animation: pack-tear-burst 0.45s ease-out forwards;
+    }
+
+    .animate-pedestal-spin {
+      animation: pedestal-spin 24s linear infinite;
+    }
+
+    @keyframes spin-slow {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .animate-spin-slow {
+      animation: spin-slow 8s linear infinite;
+    }
+
+    /* 3D Perspective Utility */
+    .perspective-carousel {
+      perspective: 1400px;
+      perspective-origin: 50% 50%;
+    }
+
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+  <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
